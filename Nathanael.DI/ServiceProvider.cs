@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,9 +19,9 @@ namespace Nathanael.DI
 
         public object? GetService(Type serviceType)
         {
-            if (_serviceAccessors.TryGetValue(serviceType, out var accessor))
+            if (_serviceAccessors.TryGetValue(serviceType, out var accessors))
             {
-                return accessor.First().GetService(this);
+                return accessors.First().GetService(this);
             }
 
             return null;
@@ -36,7 +35,10 @@ namespace Nathanael.DI
                 {
                     foreach (var accessor in _serviceAccessors.SelectMany(kvp => kvp.Value))
                     {
-                        accessor.Dispose();
+                        if(!_isScoped || accessor is ScopedServiceAccessor)
+                        {
+                            accessor.Dispose();
+                        }
                     }
                 }
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer

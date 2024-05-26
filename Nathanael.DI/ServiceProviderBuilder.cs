@@ -1,4 +1,5 @@
-﻿using Nathanael.DI.Internal;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Nathanael.DI.Internal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -73,17 +74,25 @@ namespace Nathanael.DI
 
             var iServiceProvider = typeof(IServiceProvider);
             var getServiceMethod = iServiceProvider.GetMethod(nameof(IServiceProvider.GetService))!;
+            var getRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), 
+                                                                                              BindingFlags.Public | BindingFlags.Static,
+                                                                                              new[] { iServiceProvider, typeof(Type) })!;
 
             /* 
              * the expression we are defining is as follows:
-             * sp => new Service((Dependency1)sp.GetService(dependencyType1), 
-             *                   (Dependency2)sp.GetService(dependencyType2), 
+             * sp => new Service((Dependency1)sp.GetRequiredService(dependencyType1), // for non nullable parameters
+             *                   (Dependency2)sp.GetService(dependencyType2),  // for nullable parameters
              *                   ... , 
              *                   (DependencyN)sp.GetService(dependencyTypeN));
              */
 
+            var nc = new NullabilityInfoContext();
             var sp = Expression.Parameter(iServiceProvider);
-            var parameterCalls = parameters.Select(p => Expression.Convert(Expression.Call(sp, getServiceMethod, Expression.Constant(p.ParameterType)), p.ParameterType));
+            var parameterCalls = parameters.Select(p => Expression.Convert(nc.Create(p).WriteState == NullabilityState.NotNull ?
+                                                                               Expression.Call(getRequiredServiceMethod, sp, Expression.Constant(p.ParameterType)) :
+                                                                               Expression.Call(sp, getServiceMethod, Expression.Constant(p.ParameterType)), 
+                                                                           p.ParameterType));
+
             var createService = Expression.New(ci, arguments: parameterCalls);
             var factory = Expression.Lambda<Func<IServiceProvider, object?>>(createService, sp);
             
