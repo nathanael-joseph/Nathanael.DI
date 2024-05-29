@@ -19,30 +19,47 @@ namespace Nathanael.DI
 
         private ConcurrentDictionary<Type, IEnumerable<ServiceAccessor>> BuildServiceAccessorDictionary(ServiceProviderConfiguration configuration)
         {
-            var serviceConfigurationAcessors = configuration.ServiceConfigurations
-                                                            .Select(sc => (ServiceConfiguration: sc, ServiceAccessor: BuildServiceAccessor(sc, configuration)))
-                                                            .ToList();
+            var serviceLifetimes = GetServiceLifetimes(configuration.ServiceConfigurations);
 
-            var dependencyTypes = serviceConfigurationAcessors.SelectMany(sca => sca.ServiceConfiguration.GetDependencyTypes())
-                                                              .Distinct();
+            var serviceConfigurationAcessors = configuration.ServiceConfigurations
+                                                            .Select(sc => (ServiceConfiguration: sc, ServiceAccessor: BuildServiceAccessor(sc, serviceLifetimes)))
+                                                            .ToList();
 
             var serviceAccessorDictionary = new ConcurrentDictionary<Type, IEnumerable<ServiceAccessor>>();
 
-            foreach (var d in dependencyTypes)
+            foreach (var st in serviceLifetimes.Keys)
             {
-                var accessors = serviceConfigurationAcessors.Where(sca => sca.ServiceConfiguration.GetDependencyTypes().Contains(d))
+                var accessors = serviceConfigurationAcessors.Where(sca => sca.ServiceConfiguration.GetServiceTypes().Contains(st))
                                                             .Select(sca => sca.ServiceAccessor)
                                                             .ToList();
 
-                serviceAccessorDictionary[d] = accessors;
+                serviceAccessorDictionary[st] = accessors;
             }
 
             return serviceAccessorDictionary;
         }
 
-        private ServiceAccessor BuildServiceAccessor(ServiceConfiguration sc, ServiceProviderConfiguration configuration)
+        private Dictionary<Type, Lifetime> GetServiceLifetimes(List<ServiceConfiguration> serviceConfigurations)
         {
-            var factory = BuildFactoryMethod(sc, configuration);
+            var serviceTypeLifetimes = serviceConfigurations.SelectMany(sc => sc.GetServiceTypes().Select(st => (ServiceType: st, Lifetime: sc.Lifetime)))
+                                                            .GroupBy(sl => sl.ServiceType);
+
+            foreach (var group in serviceTypeLifetimes)
+            {
+                var lifetimes = group.Select(g => g.Lifetime).Distinct();
+                if (lifetimes.Count() != 1)
+                {
+                    throw new ServiceConfigurationException($"The service type {group.Key} cannot be registered with {lifetimes.First()} and with {lifetimes.Last()}. A resolvable service type can only be registered with one lifetime.");
+                }
+            }
+
+            return serviceTypeLifetimes.ToDictionary(stl => stl.Key, stl => stl.First().Lifetime);
+
+        }
+
+        private ServiceAccessor BuildServiceAccessor(ServiceConfiguration sc, Dictionary<Type, Lifetime> serviceLifetimes)
+        {
+            var factory = BuildFactoryMethod(sc, serviceLifetimes);
 
             switch (sc.Lifetime)
             {
@@ -57,20 +74,20 @@ namespace Nathanael.DI
             }
         }
 
-        private Func<IServiceProvider, object?> BuildFactoryMethod(ServiceConfiguration sc, ServiceProviderConfiguration configuration)
+        private Func<IServiceProvider, object?> BuildFactoryMethod(ServiceConfiguration sc, Dictionary<Type, Lifetime> serviceLifetimes)
         {
             if (sc.FactoryMethod != null) return sc.FactoryMethod;
-            if (sc.ServiceType.IsPrimitive) return sp => Activator.CreateInstance(sc.ServiceType);
-            if (sc.ServiceType.IsAbstract) throw new ServiceConfigurationException($"The type {sc.ServiceType} is an abstract type. A service configuration for an abstract service type must define a factory method.");
+            if (sc.ServiceImplementationType.IsPrimitive) return sp => Activator.CreateInstance(sc.ServiceImplementationType);
+            if (sc.ServiceImplementationType.IsAbstract) throw new ServiceConfigurationException($"The type {sc.ServiceImplementationType} is an abstract type. A service configuration for an abstract service type must define a factory method.");
 
-            var ci = GetConstructorInfo(sc.ServiceType);
+            var ci = GetConstructorInfo(sc.ServiceImplementationType);
 
-            return BuildFactoryMethod(ci, configuration);
+            return BuildFactoryMethod(ci, sc, serviceLifetimes);
         }
 
-        private Func<IServiceProvider, object?> BuildFactoryMethod(ConstructorInfo ci, ServiceProviderConfiguration configuration)
+        private Func<IServiceProvider, object?> BuildFactoryMethod(ConstructorInfo ci, ServiceConfiguration sc, Dictionary<Type, Lifetime> serviceLifetimes)
         {
-            var parameters = GetConstructorParameters(ci, configuration);
+            var parameters = GetConstructorParameters(ci, sc.Lifetime, serviceLifetimes);
 
             var iServiceProvider = typeof(IServiceProvider);
             var getServiceMethod = iServiceProvider.GetMethod(nameof(IServiceProvider.GetService))!;
@@ -86,12 +103,11 @@ namespace Nathanael.DI
              *                   (DependencyN)sp.GetService(dependencyTypeN));
              */
 
-            var nc = new NullabilityInfoContext();
             var sp = Expression.Parameter(iServiceProvider);
-            var parameterCalls = parameters.Select(p => Expression.Convert(nc.Create(p).WriteState == NullabilityState.NotNull ?
-                                                                               Expression.Call(getRequiredServiceMethod, sp, Expression.Constant(p.ParameterType)) :
-                                                                               Expression.Call(sp, getServiceMethod, Expression.Constant(p.ParameterType)), 
-                                                                           p.ParameterType));
+            var parameterCalls = parameters.Select(p => Expression.Convert(p.Required ?
+                                                                               Expression.Call(getRequiredServiceMethod, sp, Expression.Constant(p.ParameterInfo.ParameterType)) :
+                                                                               Expression.Call(sp, getServiceMethod, Expression.Constant(p.ParameterInfo.ParameterType)), 
+                                                                           p.ParameterInfo.ParameterType));
 
             var createService = Expression.New(ci, arguments: parameterCalls);
             var factory = Expression.Lambda<Func<IServiceProvider, object?>>(createService, sp);
@@ -99,25 +115,34 @@ namespace Nathanael.DI
             return factory.Compile();
         }
 
-        private static ParameterInfo[] GetConstructorParameters(ConstructorInfo ci, ServiceProviderConfiguration configuration)
+        private static (ParameterInfo ParameterInfo, bool Required)[] GetConstructorParameters(ConstructorInfo ci, Lifetime lifetime, Dictionary<Type, Lifetime> serviceLifetimes)
         {
-            var parameters = ci.GetParameters();
-            
-            if(parameters.Any()) 
+            var nc = new NullabilityInfoContext();
+
+            var parameters = ci.GetParameters()
+                               .Select(pi => (ParameterInfo: pi, Required: nc.Create(pi).WriteState != NullabilityState.Nullable))
+                               .ToArray();
+
+            foreach (var p in parameters)
             {
-                var resolvableTypoes = configuration.ServiceConfigurations.SelectMany(sc => sc.GetDependencyTypes());
+                var type = p.ParameterInfo.ParameterType;
 
-                foreach (var p in parameters)
+                if(p.Required)
                 {
-                    if (p.ParameterType.IsGenericTypeParameter)
+                    if (type.IsGenericTypeParameter)
                     {
-                        throw new ServiceConfigurationException($"Cannot resolve dependency {p.ParameterType} required to create service {ci.DeclaringType} as it is a generic type parameter.");
+                        throw new ServiceConfigurationException($"Cannot resolve dependency {type} required to create service {ci.DeclaringType} as it is a generic type parameter.");
                     }
 
-                    if (!resolvableTypoes.Contains(p.ParameterType))
+                    if (!serviceLifetimes.Keys.Contains(type))
                     {
-                        throw new ServiceConfigurationException($"Cannot resolve dependency {p.ParameterType} required to create service {ci.DeclaringType} as no service has been configured for it.");
+                        throw new ServiceConfigurationException($"Cannot resolve dependency {type} required to create service {ci.DeclaringType} as no service has been configured for it.");
                     }
+                }
+
+                if (lifetime == Lifetime.Singleton && serviceLifetimes.ContainsKey(type) && serviceLifetimes[type] == Lifetime.Scoped)
+                {
+                    throw new ServiceConfigurationException($"Cannot resolve dependency {type} required to create service {ci.DeclaringType} with lifetime {lifetime} as the dependency {type} is registered as {Lifetime.Scoped}");
                 }
             }
 

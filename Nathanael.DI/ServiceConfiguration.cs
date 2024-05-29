@@ -6,20 +6,20 @@ namespace Nathanael.DI;
 
 public class ServiceConfiguration
 {
-    protected HashSet<Type> RegisteredDependencyTypes { get; }
-    public Type ServiceType { get; }
+    protected HashSet<Type> RegisteredServiceTypes { get; }
+    public Type ServiceImplementationType { get; }
     public Lifetime Lifetime { get; }
     public Func<IServiceProvider, object?>? FactoryMethod { get; set; }
 
-    public ServiceConfiguration(Type serviceType, Lifetime lifetime, IEnumerable<Type> dependencyTypes, Func<IServiceProvider, object?>? factoryMethod)
+    public ServiceConfiguration(Type serviceImplementationType, Lifetime lifetime, IEnumerable<Type> serviceTypes, Func<IServiceProvider, object?>? factoryMethod)
     {
-        ArgumentNullException.ThrowIfNull(serviceType, nameof(serviceType));
+        ArgumentNullException.ThrowIfNull(serviceImplementationType, nameof(serviceImplementationType));
         ArgumentNullException.ThrowIfNull(lifetime, nameof(lifetime));
-        ArgumentNullException.ThrowIfNull(dependencyTypes, nameof(dependencyTypes));
+        ArgumentNullException.ThrowIfNull(serviceTypes, nameof(serviceTypes));
 
-        ServiceType = serviceType;
+        ServiceImplementationType = serviceImplementationType;
         Lifetime = lifetime;
-        RegisteredDependencyTypes = dependencyTypes.ToHashSet();
+        RegisteredServiceTypes = serviceTypes.ToHashSet();
         FactoryMethod = factoryMethod;
     }
 
@@ -43,25 +43,25 @@ public class ServiceConfiguration
     {
     }
 
-    public ServiceConfiguration RegisterDependencyType(Type dependancyType)
+    public ServiceConfiguration RegisterServiceType(Type serviceType)
     {
-        if (!ServiceType.IsAssignableTo(dependancyType))
+        if (!ServiceImplementationType.IsAssignableTo(serviceType))
         {
-            throw new InvalidOperationException($"Cannot assign {ServiceType} to instance of {dependancyType}");
+            throw new InvalidOperationException($"Cannot assign {ServiceImplementationType} to instance of {serviceType}");
         }
 
-        RegisteredDependencyTypes.Add(dependancyType);
+        RegisteredServiceTypes.Add(serviceType);
 
         return this;
     }
 
-    public ICollection<Type> GetDependencyTypes()
+    public ICollection<Type> GetServiceTypes()
     {
-        if (RegisteredDependencyTypes.Any())
+        if (RegisteredServiceTypes.Any())
         {
-            return RegisteredDependencyTypes.ToArray();
+            return RegisteredServiceTypes.ToArray();
         }
 
-        return new Type[] { ServiceType };
+        return new Type[] { ServiceImplementationType };
     }
 }

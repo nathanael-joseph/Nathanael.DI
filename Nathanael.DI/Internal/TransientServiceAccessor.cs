@@ -6,6 +6,8 @@ internal class TransientServiceAccessor : ServiceAccessor
 {
     private readonly Func<IServiceProvider, object?> _factory;
 
+    public override Lifetime Lifetime => Lifetime.Transient;
+
     public TransientServiceAccessor(Func<IServiceProvider, object?> factory)
     {
         ArgumentNullException.ThrowIfNull(factory, nameof(factory));

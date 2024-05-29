@@ -40,7 +40,7 @@ namespace Nathanael.DI.Tests
             var depb = sp.GetService(typeof(IDependancyB));
 
             spc.ServiceConfigurations.Should().HaveCount(1);
-            spc.ServiceConfigurations.First().GetDependencyTypes().Should().HaveCount(2);
+            spc.ServiceConfigurations.First().GetServiceTypes().Should().HaveCount(2);
             spc.ServiceConfigurations.First().FactoryMethod.Should().NotBeNull();
 
             depa.Should().BeOfType<ServiceAB>();

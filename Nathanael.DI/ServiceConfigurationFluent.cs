@@ -17,7 +17,7 @@ namespace Nathanael.DI
 
         public ServiceConfigurationFluent<TService> WhenResolving<TDep>()
         {
-            ServiceConfiguration.RegisterDependencyType(typeof(TDep));
+            ServiceConfiguration.RegisterServiceType(typeof(TDep));
             return this;
         }
 

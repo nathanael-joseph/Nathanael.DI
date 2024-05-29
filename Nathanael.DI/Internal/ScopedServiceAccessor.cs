@@ -7,6 +7,8 @@ internal class ScopedServiceAccessor : SingletonServiceAccessor
     private readonly bool _isScoped = false;
     private Func<IServiceProvider, object?> _factory;
 
+    public override Lifetime Lifetime => Lifetime.Scoped;
+
     private ScopedServiceAccessor(Func<IServiceProvider, object?> factory, bool isScoped) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(factory, nameof(factory));

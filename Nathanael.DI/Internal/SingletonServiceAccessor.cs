@@ -8,6 +8,8 @@ internal class SingletonServiceAccessor : ServiceAccessor
     private Func<IServiceProvider, object?> _factory;
     private object? _instance;
 
+    public override Lifetime Lifetime => Lifetime.Singleton;
+
     public SingletonServiceAccessor(Func<IServiceProvider, object?> factory)
     {
         ArgumentNullException.ThrowIfNull(factory, nameof(factory));
