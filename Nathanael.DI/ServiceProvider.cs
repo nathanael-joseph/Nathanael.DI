@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Nathanael.DI.Internal;
+using static System.Net.WebRequestMethods;
 
 namespace Nathanael.DI
 {
@@ -17,6 +19,7 @@ namespace Nathanael.DI
             _serviceAccessors = serviceAccessors;
         }
 
+        /// <inheritdoc/>
         public object? GetService(Type serviceType)
         {
             if (_serviceAccessors.TryGetValue(serviceType, out var accessors))
@@ -24,7 +27,27 @@ namespace Nathanael.DI
                 return accessors.First().GetService(this);
             }
 
+            if (IsIEnumerable(serviceType))
+            {
+                var gtp = serviceType.GetGenericArguments().First();
+                if (_serviceAccessors.TryGetValue(gtp, out accessors))
+                {
+                    return accessors.Select(a => a.GetService(this));
+                }
+                return Enumerable.Empty<object>();
+            }
+
+            if (serviceType.IsGenericType && _serviceAccessors.TryGetValue(serviceType.GetGenericTypeDefinition(), out accessors))
+            {
+                return accessors.First().GetService(this, serviceType);
+            }
+
             return null;
+        }
+
+        private bool IsIEnumerable(Type serviceType)
+        {
+            return serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>);    
         }
 
         protected virtual void Dispose(bool disposing)

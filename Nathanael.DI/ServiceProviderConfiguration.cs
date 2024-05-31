@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Nathanael.DI;
 
-public class ServiceProviderConfiguration 
+public class ServiceProviderConfiguration
 {
-    public List<ServiceConfiguration> ServiceConfigurations { get; } = new();
+    public List<ServiceConfiguration> ServiceConfigurations { get; } = new()
+    {
+        new ServiceConfiguration(typeof(IServiceProvider), Lifetime.Transient, sp => sp)
+    };
 
     public ServiceProviderConfiguration()
     {

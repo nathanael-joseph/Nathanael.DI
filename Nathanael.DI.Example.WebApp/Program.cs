@@ -1,13 +1,16 @@
-
-using Nathanael.DI;
+using Nathanael.DI.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//IServiceProviderFactory<ServiceProviderBuilder> scf = 
-//builder.Host.UseServiceProviderFactory()
+ServiceProviderFactory spf = new();
+
+
+builder.Host.UseServiceProviderFactory(spf);
 
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
 
 app.Run();
+
+

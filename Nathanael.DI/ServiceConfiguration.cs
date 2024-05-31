@@ -45,7 +45,26 @@ public class ServiceConfiguration
 
     public ServiceConfiguration RegisterServiceType(Type serviceType)
     {
-        if (!ServiceImplementationType.IsAssignableTo(serviceType))
+        if (ServiceImplementationType == serviceType) return this;
+
+        if (ServiceImplementationType.IsGenericTypeDefinition)
+        {
+            if (serviceType.IsInterface)
+            {
+                var interfaces = ServiceImplementationType.GetInterfaces();
+                var found = interfaces.Any(i => i == serviceType 
+                                             || (i.IsGenericType && i.GetGenericTypeDefinition() == serviceType));
+                if (!found)
+                {
+                    throw new InvalidOperationException($"{ServiceImplementationType} does not implement {serviceType}");
+                }
+            }
+            else if(!serviceType.IsSubclassOf(ServiceImplementationType))
+            {
+                throw new InvalidOperationException($"{ServiceImplementationType} does not derive from {serviceType}");
+            }
+        }
+        else if (!ServiceImplementationType.IsAssignableTo(serviceType))
         {
             throw new InvalidOperationException($"Cannot assign {ServiceImplementationType} to instance of {serviceType}");
         }

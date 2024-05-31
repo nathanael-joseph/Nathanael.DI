@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +36,32 @@ namespace Nathanael.DI.Tests
 
             nc.Create(pis[3]).WriteState.Should().Be(NullabilityState.NotNull);
             nc.Create(pis[3]).ReadState.Should().Be(NullabilityState.NotNull);
+        }
+
+        public interface IUse<T>
+        {
+
+        }
+
+        public class IAmOf<T, k>
+        {
+            public IAmOf(IUse<T> use) 
+            { 
+            }
+        }
+
+        [Fact]
+        public void CanInstanciateAny()
+        {
+            var gtd_ga = typeof(IAmOf<int, string>).GetGenericArguments().ToArray();
+
+            var gtdci = typeof(IAmOf<,>).GetConstructors().First();
+            var gtdci_params = gtdci.GetParameters().ToArray();
+
+            var iscgm = gtdci.IsConstructedGenericMethod;
+
+            var concreteci = typeof(IAmOf<int, string>).GetConstructors().First();
+            var concreteci_params = concreteci.GetParameters().ToArray();
         }
     }
 }
