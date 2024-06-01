@@ -2,10 +2,7 @@ using Nathanael.DI.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-ServiceProviderFactory spf = new();
-
-
-builder.Host.UseServiceProviderFactory(spf);
+builder.Host.UseNathanaelDI();
 
 var app = builder.Build();
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Nathanael.DI.Internal;
 
@@ -7,7 +7,7 @@ internal class SingletonServiceAccessor : ServiceAccessor
 {
     private readonly object _lock = new();
     private readonly Func<IServiceProvider, Type?, object?> _factory;
-    private readonly Dictionary<Type, object?> _instances = new();
+    private readonly ConcurrentDictionary<Type, object?> _instances = new();
 
     public override Lifetime Lifetime => Lifetime.Singleton;
 
@@ -26,21 +26,7 @@ internal class SingletonServiceAccessor : ServiceAccessor
     {
         var key = genericImplementationType ?? typeof(object);
 
-        if (_instances.TryGetValue(key, out var instance))
-        {
-            return instance;
-        }
-        
-        lock (_lock)
-        {
-            if (!_instances.TryGetValue(key, out instance))
-            {
-                instance = _factory.Invoke(serviceProvider, genericImplementationType);
-                _instances[key] = instance;
-            }
-
-            return instance;
-        }
+        return _instances.GetOrAdd(key, k => _factory.Invoke(serviceProvider, genericImplementationType));
     }
 
     public override void Dispose()

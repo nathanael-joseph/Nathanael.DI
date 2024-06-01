@@ -2,9 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Nathanael.DI.Internal;
-using static System.Net.WebRequestMethods;
 
 namespace Nathanael.DI
 {
@@ -15,8 +13,24 @@ namespace Nathanael.DI
         private readonly ConcurrentDictionary<Type, IEnumerable<ServiceAccessor>> _serviceAccessors;
 
         internal ServiceProvider(ConcurrentDictionary<Type, IEnumerable<ServiceAccessor>> serviceAccessors)
+            : this(serviceAccessors, false)
+        { }
+
+        private ServiceProvider(ConcurrentDictionary<Type, IEnumerable<ServiceAccessor>> serviceAccessors, bool isScoped)
         {
             _serviceAccessors = serviceAccessors;
+            _isScoped = isScoped;
+        }
+
+        public ServiceProvider CreateScopedServiceProvider()
+        {
+            ConcurrentDictionary<Type, IEnumerable<ServiceAccessor>> scopedServiceAccessors = new();
+            foreach(var serviceAccessor in _serviceAccessors)
+            {
+                scopedServiceAccessors[serviceAccessor.Key] = serviceAccessor.Value.Select(a => a.CreateScopedServiceAccessor()).ToArray();
+            }
+
+            return new ServiceProvider(scopedServiceAccessors, true);
         }
 
         /// <inheritdoc/>
@@ -30,11 +44,19 @@ namespace Nathanael.DI
             if (IsIEnumerable(serviceType))
             {
                 var gtp = serviceType.GetGenericArguments().First();
+                var lstType = typeof(List<>).MakeGenericType(gtp);
+                var lst = Activator.CreateInstance(lstType);
+                
                 if (_serviceAccessors.TryGetValue(gtp, out accessors))
                 {
-                    return accessors.Select(a => a.GetService(this));
+                    var add = lstType.GetMethod("Add");
+                    foreach (var a in accessors)
+                    {
+                        add.Invoke(lst, new[] { a.GetService(this, gtp) });
+                    }
                 }
-                return Enumerable.Empty<object>();
+
+                return lst;
             }
 
             if (serviceType.IsGenericType && _serviceAccessors.TryGetValue(serviceType.GetGenericTypeDefinition(), out accessors))

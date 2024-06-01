@@ -1,11 +1,24 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 
 namespace Nathanael.DI.Hosting
 {
-    public static class ServiceProviderConfigurationExtensions
+    public static class HostingExtensions
     {
+        public static ServiceProviderConfiguration UseNathanaelDI(this IHostBuilder host)
+        {
+            ServiceProviderFactory spf = new();
+            
+            spf.ServiceProviderConfiguration.ProvideSingleton<ServiceScopeFactory>()
+                                            .WhenResolving<IServiceScopeFactory>();
+
+            host.UseServiceProviderFactory(spf);
+
+            return spf.ServiceProviderConfiguration;
+        }
+
         public static ServiceProviderConfiguration RegisterServiceCollection(this ServiceProviderConfiguration serviceProviderConfiguration,
                                                                              IServiceCollection serviceCollection)
         {
@@ -20,11 +33,6 @@ namespace Nathanael.DI.Hosting
                 }
                 else
                 {
-                    if(sd.ServiceType == typeof(ILogger<>))
-                    {
-
-                    }
-
                     config = new ServiceConfiguration(sd.ImplementationType ?? sd.ServiceType, Convert(sd.Lifetime));
                     
                     if (sd.ServiceType != config.ServiceImplementationType)

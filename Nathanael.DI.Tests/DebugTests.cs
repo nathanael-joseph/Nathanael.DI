@@ -53,15 +53,17 @@ namespace Nathanael.DI.Tests
         [Fact]
         public void CanInstanciateAny()
         {
-            var gtd_ga = typeof(IAmOf<int, string>).GetGenericArguments().ToArray();
+            var constructed_generic_type = typeof(IAmOf<int, string>);
+            var generic_args = constructed_generic_type.GetGenericArguments();
+            var generic_type_args = constructed_generic_type.GetGenericTypeDefinition().GetGenericArguments();
 
-            var gtdci = typeof(IAmOf<,>).GetConstructors().First();
-            var gtdci_params = gtdci.GetParameters().ToArray();
+            var ctr = constructed_generic_type.GetConstructors().First();
+            var ctr_parameter = ctr.GetParameters().First();
 
-            var iscgm = gtdci.IsConstructedGenericMethod;
+            var ctr_parameter_generic_arg = ctr_parameter.ParameterType.GetGenericArguments().First();
 
-            var concreteci = typeof(IAmOf<int, string>).GetConstructors().First();
-            var concreteci_params = concreteci.GetParameters().ToArray();
+            generic_args.Should().Contain(ctr_parameter_generic_arg);
+            generic_type_args.Should().NotContain(ctr_parameter_generic_arg);
         }
     }
 }

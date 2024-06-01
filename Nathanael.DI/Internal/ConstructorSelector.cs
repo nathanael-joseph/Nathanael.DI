@@ -16,7 +16,7 @@ namespace Nathanael.DI.Internal
         public static ConstructorInfo SelectConstructor(Type serviceType, 
                                                         Lifetime serviceLifetime,
                                                         ResolvableDependencyCollection resolvableDependenies)
-        {
+        {       
             var constructors = serviceType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
 
             if (constructors.Length == 0) throw new ServiceConfigurationException($"The type {serviceType} does not define any public constructors.");

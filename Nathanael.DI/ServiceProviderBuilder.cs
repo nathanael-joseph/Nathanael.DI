@@ -120,22 +120,25 @@ namespace Nathanael.DI
             var ci = ConstructorSelector.SelectConstructor(sc, resolvableDependencyCollection);
             resolvableDependencyCollection.EnsureConstructorParametersAreResolvable(sc, ci);
 
-            return (sp, genericImplementationType) =>
+            return (sp, requestedType) =>
             {
-                ArgumentNullException.ThrowIfNull(genericImplementationType);
-                
-                if (genericImplementationType.IsAbstract || genericImplementationType.IsInterface)
+                ArgumentNullException.ThrowIfNull(requestedType);
+
+                var genericImplementationType = requestedType;
+
+                if (requestedType.IsAbstract || requestedType.IsInterface )
                 {
-                    var genericArgs = genericImplementationType.GetGenericArguments();
+                    var genericArgs = requestedType.GetGenericArguments();
                     genericImplementationType = sc.ServiceImplementationType.MakeGenericType(genericArgs);
                 }
 
                 var cstr = ConstructorSelector.SelectConstructor(genericImplementationType, sc.Lifetime, resolvableDependencyCollection);
-                var parametersRequired = resolvableDependencyCollection.EnsureConstructorParametersAreResolvable(genericImplementationType, sc.Lifetime, ci);
+                var parametersRequired = resolvableDependencyCollection.EnsureConstructorParametersAreResolvable(genericImplementationType, sc.Lifetime, cstr);
                 
                 var dependencies = parametersRequired.Select(pr => pr.Required ? 
                                                                    sp.GetRequiredService(pr.ParameterInfo.ParameterType) : 
-                                                                   sp.GetService(pr.ParameterInfo.ParameterType))
+                                                                   sp.GetService(pr.ParameterInfo.ParameterType)
+                                                            )
                                                      .ToArray();
                 
                 return cstr.Invoke(dependencies);
