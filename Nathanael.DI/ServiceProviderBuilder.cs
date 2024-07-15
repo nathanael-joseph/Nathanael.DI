@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Nathanael.DI.Internal;
+﻿using Nathanael.DI.Internal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -152,7 +151,7 @@ namespace Nathanael.DI
 
             var iServiceProvider = typeof(IServiceProvider);
             var getServiceMethod = iServiceProvider.GetMethod(nameof(IServiceProvider.GetService))!;
-            var getRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), 
+            var getRequiredServiceMethod = typeof(ServiceProviderExtensions).GetMethod(nameof(ServiceProviderExtensions.GetRequiredService), 
                                                                                               BindingFlags.Public | BindingFlags.Static,
                                                                                               new[] { iServiceProvider, typeof(Type) })!;
 

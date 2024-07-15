@@ -2,7 +2,9 @@ using Nathanael.DI.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseNathanaelDI();
+var diconfig = builder.Host.UseNathanaelDI();
+
+
 
 var app = builder.Build();
 
