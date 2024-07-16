@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,19 +45,7 @@ namespace Nathanael.DI
             if (IsIEnumerable(serviceType))
             {
                 var gtp = serviceType.GetGenericArguments().First();
-                var lstType = typeof(List<>).MakeGenericType(gtp);
-                var lst = Activator.CreateInstance(lstType);
-                
-                if (_serviceAccessors.TryGetValue(gtp, out accessors))
-                {
-                    var add = lstType.GetMethod("Add");
-                    foreach (var a in accessors)
-                    {
-                        add.Invoke(lst, new[] { a.GetService(this, gtp) });
-                    }
-                }
-
-                return lst;
+                return GetAllServices(gtp);
             }
 
             if (serviceType.IsGenericType && _serviceAccessors.TryGetValue(serviceType.GetGenericTypeDefinition(), out accessors))
@@ -67,11 +56,28 @@ namespace Nathanael.DI
             return null;
         }
 
+        private IEnumerable GetAllServices(Type serviceType)
+        {
+            var lstType = typeof(List<>).MakeGenericType(serviceType);
+            var lst = (IList)Activator.CreateInstance(lstType)!;
+
+            if (_serviceAccessors.TryGetValue(serviceType, out var accessors))
+            {
+                foreach (var a in accessors)
+                {
+                    lst.Add(a.GetService(this, serviceType));
+                }
+            }
+
+            return lst;
+        }
+
         private bool IsIEnumerable(Type serviceType)
         {
             return serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>);    
         }
 
+        
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)

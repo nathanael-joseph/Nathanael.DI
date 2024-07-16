@@ -17,5 +17,7 @@ jobs:
              dotnet --list-sdks
              pwd
              dir 
-      - name: pack
-        run: dotnet pack -o ./nugets 
+      - name: pack Nathanael.DI
+        run: dotnet pack ./Nathanael.DI/Nathanael.DI.csproj -o ./nugets 
+      - name: pack Nathanael.DI.Hosting
+        run: dotnet pack ./Nathanael.DI.Hosting/Nathanael.DI.Hosting.csproj -o ./nugets 
