@@ -18,4 +18,4 @@ jobs:
              pwd
              dir 
       - name: pack
-        run: donet pack -o ./nugets 
+        run: dotnet pack -o ./nugets 
