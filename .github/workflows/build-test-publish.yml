@@ -13,6 +13,6 @@ jobs:
         with:
           dotnet-version: 6.x
       - name: hello world
-        run: dotnet --list-sdks
-        run: pwd
-        run: dir
+        run: dotnet --list-sdks; |
+             pwd; |
+             dir; 
