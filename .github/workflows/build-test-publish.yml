@@ -17,3 +17,5 @@ jobs:
              dotnet --list-sdks
              pwd
              dir 
+      - name: pack
+        run: donet pack -o ./nugets 
