@@ -2,7 +2,7 @@ name: build, test, and publish a .net nuget package
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
