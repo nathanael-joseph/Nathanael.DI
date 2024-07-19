@@ -21,3 +21,17 @@ jobs:
         run: dotnet pack ./Nathanael.DI/Nathanael.DI.csproj -o ./nugets 
       - name: pack Nathanael.DI.Hosting
         run: dotnet pack ./Nathanael.DI.Hosting/Nathanael.DI.Hosting.csproj -o ./nugets 
+  
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: print envs
+        run: env
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: hellow world
+        run: echo "hello world"
