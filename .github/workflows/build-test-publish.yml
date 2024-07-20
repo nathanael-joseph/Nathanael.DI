@@ -3,6 +3,7 @@ name: build, test, and publish a .net nuget package
 on:
   push:
     branches: [ main ]
+    tags: ['*']
 
 jobs:
   build:
@@ -33,5 +34,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: hellow world
-        run: echo "hello world"
+      - name: GitHub Tag Name example
+        run: |
+          echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          echo "Tag name from github.ref_name: ${{  github.ref_name }}"
