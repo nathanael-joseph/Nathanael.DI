@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BUILD_VERSION: ${{ github.event_name }}
+      BUILD_VERSION: ${{ github.ref_type == 'tag' && '' || '0.0.0-' }}${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
