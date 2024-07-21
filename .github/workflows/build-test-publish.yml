@@ -22,9 +22,9 @@ jobs:
              dir 
              env
       - name: pack Nathanael.DI
-        run: dotnet pack ./Nathanael.DI/Nathanael.DI.csproj -o ./nugets 
+        run: dotnet pack ./Nathanael.DI/Nathanael.DI.csproj -o ./nugets -p:Version=${{ env.BUILD_VERSION }}
       - name: pack Nathanael.DI.Hosting
-        run: dotnet pack ./Nathanael.DI.Hosting/Nathanael.DI.Hosting.csproj -o ./nugets 
+        run: dotnet pack ./Nathanael.DI.Hosting/Nathanael.DI.Hosting.csproj -o ./nugets -p:Version=${{ env.BUILD_VERSION }}
   
   test:
     needs: build
