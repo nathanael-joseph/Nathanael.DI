@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUILD_VERSION: ${{github.event_path }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -18,6 +20,7 @@ jobs:
              dotnet --list-sdks
              pwd
              dir 
+             env
       - name: pack Nathanael.DI
         run: dotnet pack ./Nathanael.DI/Nathanael.DI.csproj -o ./nugets 
       - name: pack Nathanael.DI.Hosting
@@ -33,6 +36,8 @@ jobs:
   publish:
     needs: test
     runs-on: ubuntu-latest
+    
+
     steps:
       - name: GitHub Tag Name example
         run: |
