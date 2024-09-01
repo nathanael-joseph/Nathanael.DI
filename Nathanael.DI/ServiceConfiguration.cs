@@ -4,11 +4,26 @@ using System.Linq;
 
 namespace Nathanael.DI;
 
+/// <summary>
+/// Defines a service implemntation which the service provider should provide, and the services for which it should be provided.
+/// </summary>
 public class ServiceConfiguration
 {
+    /// <summary>
+    /// The service types which will be resolved by this service.
+    /// </summary>
     protected HashSet<Type> RegisteredServiceTypes { get; }
+    /// <summary>
+    /// The service's implementation type.
+    /// </summary>
     public Type ServiceImplementationType { get; }
+    /// <summary>
+    /// The services lifetime.
+    /// </summary>
     public Lifetime Lifetime { get; }
+    /// <summary>
+    /// A custom factory method for instantiating the service.
+    /// </summary>
     public Func<IServiceProvider, object?>? FactoryMethod { get; set; }
 
     public ServiceConfiguration(Type serviceImplementationType, Lifetime lifetime, IEnumerable<Type> serviceTypes, Func<IServiceProvider, object?>? factoryMethod)
@@ -23,30 +38,54 @@ public class ServiceConfiguration
         FactoryMethod = factoryMethod;
     }
 
-    public ServiceConfiguration(Type serviceType, Lifetime lifetime, Func<IServiceProvider, object?>? factoryMethod, params Type[] dependencyTypes)
-        : this(serviceType, lifetime, dependencyTypes, factoryMethod)
+    /// <summary>
+    /// </summary>
+    /// <param name="serviceImplementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <param name="factoryMethod"></param>
+    /// <param name="serviceTypes"></param>
+    public ServiceConfiguration(Type serviceImplementationType, Lifetime lifetime, Func<IServiceProvider, object?>? factoryMethod, params Type[] serviceTypes)
+        : this(serviceImplementationType, lifetime, serviceTypes, factoryMethod)
     {
     }
 
-    public ServiceConfiguration(Type serviceType, Lifetime lifetime, IEnumerable<Type> dependencyTypes)
-        : this(serviceType, lifetime, dependencyTypes, null)
+    /// <summary>
+    /// </summary>
+    /// <param name="serviceImplementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <param name="serviceTypes"></param>
+    public ServiceConfiguration(Type serviceImplementationType, Lifetime lifetime, IEnumerable<Type> serviceTypes)
+        : this(serviceImplementationType, lifetime, serviceTypes, null)
     {
     }
 
-    public ServiceConfiguration(Type serviceType, Lifetime lifetime, Func<IServiceProvider, object?>? factoryMethod)
-        : this(serviceType, lifetime, Enumerable.Empty<Type>(), factoryMethod)
+    /// <summary>
+    /// </summary>
+    /// <param name="serviceImplementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <param name="factoryMethod"></param>
+    public ServiceConfiguration(Type serviceImplementationType, Lifetime lifetime, Func<IServiceProvider, object?>? factoryMethod)
+        : this(serviceImplementationType, lifetime, Enumerable.Empty<Type>(), factoryMethod)
     {
     }
 
-    public ServiceConfiguration(Type serviceType, Lifetime lifetime)
-        : this(serviceType, lifetime, Enumerable.Empty<Type>())
+    /// <summary>
+    /// </summary>
+    /// <param name="serviceImplementationType"></param>
+    /// <param name="lifetime"></param>
+    public ServiceConfiguration(Type serviceImplementationType, Lifetime lifetime)
+        : this(serviceImplementationType, lifetime, Enumerable.Empty<Type>())
     {
     }
 
+    /// <summary>
+    /// Registers a service type which the service provider should resolve using this service.
+    /// </summary>
+    /// <param name="serviceType"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public ServiceConfiguration RegisterServiceType(Type serviceType)
     {
-        if (ServiceImplementationType == serviceType) return this;
-
         if (ServiceImplementationType.IsGenericTypeDefinition)
         {
             if (serviceType.IsInterface)
@@ -74,6 +113,10 @@ public class ServiceConfiguration
         return this;
     }
 
+    /// <summary>
+    /// Gets the service tyypes which the service provider should resolve using this service.
+    /// </summary>
+    /// <returns></returns>
     public ICollection<Type> GetServiceTypes()
     {
         if (RegisteredServiceTypes.Any())
