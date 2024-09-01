@@ -34,7 +34,7 @@ jobs:
         with:
           dotnet-version: 7.x
       - name: Run tests with dotnet CLI
-        run: dotnet test
+        run: dotnet test ./Nathanael.DI.Tests/Nathanael.DI.Tests.csproj
 
   publish:
     needs: test
