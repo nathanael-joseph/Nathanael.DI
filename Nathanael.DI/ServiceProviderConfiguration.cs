@@ -5,10 +5,7 @@ namespace Nathanael.DI;
 
 public class ServiceProviderConfiguration
 {
-    public List<ServiceConfiguration> ServiceConfigurations { get; } = new()
-    {
-        new ServiceConfiguration(typeof(IServiceProvider), Lifetime.Transient, sp => sp)
-    };
+    public List<ServiceConfiguration> ServiceConfigurations { get; } = new();
 
     public ServiceProviderConfiguration()
     {

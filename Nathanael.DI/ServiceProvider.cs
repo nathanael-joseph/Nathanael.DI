@@ -53,6 +53,8 @@ namespace Nathanael.DI
                 return accessors.First().GetService(this, serviceType);
             }
 
+            if (serviceType == typeof(IServiceProvider)) return this;
+
             return null;
         }
 
@@ -64,6 +66,13 @@ namespace Nathanael.DI
             if (_serviceAccessors.TryGetValue(serviceType, out var accessors))
             {
                 foreach (var a in accessors)
+                {
+                    lst.Add(a.GetService(this, serviceType));
+                }
+            }
+            else if (serviceType.IsGenericType && _serviceAccessors.TryGetValue(serviceType.GetGenericTypeDefinition(), out accessors))
+            {
+                foreach(var a in accessors)
                 {
                     lst.Add(a.GetService(this, serviceType));
                 }
