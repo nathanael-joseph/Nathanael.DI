@@ -9,7 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BUILD_VERSION: ${{ github.ref_type == 'tag' && '' || '0.0.0-' }}${{ github.ref_name }}
+      BRANCH_BUILD_VERSION: '0.0.0-${{ github.ref_name }}-${{github.run_number}}'
+      TAG_BUILD_VERSION: ${{ github.ref_name }}
+      BUILD_VERSION: ${{ github.ref_type == 'tag' && github.env.TAG_BUILD_VERSION || github.env.BRANCH_BUILD_VERSION }}
     steps:
       - uses: actions/checkout@v4
         with:
