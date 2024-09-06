@@ -19,9 +19,9 @@ jobs:
         with:
           dotnet-version: 7.x
       - name: pack Nathanael.DI
-        run: dotnet pack ./src/Nathanael.DI/Nathanael.DI.csproj -o ./nugets -p:Version=${{ github.ref_type == 'tag' && github.env.TAG_BUILD_VERSION || github.env.BRANCH_BUILD_VERSION }}
+        run: dotnet pack ./src/Nathanael.DI/Nathanael.DI.csproj -o ./nugets -p:Version=${{ github.ref_type == 'tag' && env.TAG_BUILD_VERSION || env.BRANCH_BUILD_VERSION }}
       - name: pack Nathanael.DI.Hosting
-        run: dotnet pack ./src/Nathanael.DI.Hosting/Nathanael.DI.Hosting.csproj -o ./nugets -p:Version=${{ github.ref_type == 'tag' && github.env.TAG_BUILD_VERSION || github.env.BRANCH_BUILD_VERSION }}
+        run: dotnet pack ./src/Nathanael.DI.Hosting/Nathanael.DI.Hosting.csproj -o ./nugets -p:Version=${{ github.ref_type == 'tag' && env.TAG_BUILD_VERSION || env.BRANCH_BUILD_VERSION }}
       - name: upload build artifacts
         uses: actions/upload-artifact@v4
         with:
