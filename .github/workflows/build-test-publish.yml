@@ -55,5 +55,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+      - name: mock publishing nugets
+        run: |
+             for file in ./nugets/*.nupkg; do
+                echo "$file"
+             done
       - name: GitHub Tag Name example
         run: env
