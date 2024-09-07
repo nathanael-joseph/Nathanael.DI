@@ -58,7 +58,7 @@ jobs:
       - name: mock publishing nugets
         run: |
              for file in ./nugets/*.nupkg; do
-                echo "$file"
+                dotnet nuget push $file -k ${{ secrets.NUGET_ORG_API_KEY }} -s staging.nuget.org
              done
       - name: GitHub Tag Name example
         run: env
