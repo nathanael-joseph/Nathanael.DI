@@ -55,10 +55,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-      - name: mock publishing nugets
-        run: |
-             for file in ./nugets/*.nupkg; do
-                dotnet nuget push $file -k ${{ secrets.NUGET_ORG_API_KEY }} -s staging.nuget.org
-             done
-      - name: GitHub Tag Name example
+      # - name: mock publishing nugets
+      #   run: |
+      #        for file in ./nugets/*.nupkg; do
+      #           dotnet nuget push $file -k ${{ secrets.NUGET_ORG_API_KEY }} -s staging.nuget.org
+      #        done
+      - name: print envs
         run: env

@@ -26,6 +26,12 @@ public class ServiceConfiguration
     /// </summary>
     public Func<IServiceProvider, object?>? FactoryMethod { get; set; }
 
+    /// <summary>
+    /// </summary>
+    /// <param name="serviceImplementationType"></param>
+    /// <param name="lifetime"></param>
+    /// <param name="serviceTypes"></param>
+    /// <param name="factoryMethod"></param> 
     public ServiceConfiguration(Type serviceImplementationType, Lifetime lifetime, IEnumerable<Type> serviceTypes, Func<IServiceProvider, object?>? factoryMethod)
     {
         ArgumentNullException.ThrowIfNull(serviceImplementationType, nameof(serviceImplementationType));
