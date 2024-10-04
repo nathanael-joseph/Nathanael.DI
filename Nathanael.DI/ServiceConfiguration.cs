@@ -10,7 +10,7 @@ namespace Nathanael.DI;
 public class ServiceConfiguration
 {
     /// <summary>
-    /// The service types which will be resolved by this service.
+    /// The service types which will be resolved by an instance of this service.
     /// </summary>
     protected HashSet<Type> RegisteredServiceTypes { get; }
     /// <summary>
@@ -18,7 +18,7 @@ public class ServiceConfiguration
     /// </summary>
     public Type ServiceImplementationType { get; }
     /// <summary>
-    /// The services lifetime.
+    /// The service's lifetime.
     /// </summary>
     public Lifetime Lifetime { get; }
     /// <summary>
@@ -120,7 +120,7 @@ public class ServiceConfiguration
     }
 
     /// <summary>
-    /// Gets the service tyypes which the service provider should resolve using this service.
+    /// Gets the service types which the service provider should resolve using this service.
     /// </summary>
     /// <returns></returns>
     public ICollection<Type> GetServiceTypes()

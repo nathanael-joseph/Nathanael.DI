@@ -29,7 +29,7 @@ namespace Nathanael.DI
         }
     }
 
-    public static class FluentExtensions
+    public static class ServiceProviderConfigurationExtensions
     {
         public static ServiceConfigurationFluent<TService> ProvideTransient<TService>(this ServiceProviderConfiguration serviceProviderConfiguration)
         {
