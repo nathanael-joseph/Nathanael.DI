@@ -5,18 +5,18 @@ namespace Nathanael.DI.Tests
 {
     public class SanityTests
     {
-        private interface IDependancyA { }
-        private interface IDependancyB { }
+        private interface IDependencyA { }
+        private interface IDependencyB { }
 
-        private class ServiceA : IDependancyA { }
-        private class ServiceB : IDependancyB { }
-        private class ServiceAB : IDependancyA, IDependancyB { }
+        private class ServiceA : IDependencyA { }
+        private class ServiceB : IDependencyB { }
+        private class ServiceAB : IDependencyA, IDependencyB { }
         private class ServiceWithDependencies
         {
-            public IDependancyA DependancyA { get; }
-            public IDependancyB DependancyB { get; }
+            public IDependencyA DependancyA { get; }
+            public IDependencyB DependancyB { get; }
             
-            public ServiceWithDependencies(IDependancyA dependancyA, IDependancyB dependancyB)
+            public ServiceWithDependencies(IDependencyA dependancyA, IDependencyB dependancyB)
             {
                 DependancyA = dependancyA;
                 DependancyB = dependancyB;
@@ -30,14 +30,14 @@ namespace Nathanael.DI.Tests
          
             spc.ProvideTransient<ServiceAB>()
                .FromFactory(sp => new ServiceAB() /* example factory method */)
-               .WhenResolving<IDependancyA>()
-               .WhenResolving<IDependancyB>();
+               .WhenResolving<IDependencyA>()
+               .WhenResolving<IDependencyB>();
 
             var builder = new ServiceProviderBuilder();
             var sp = builder.Build(spc);
 
-            var depa = sp.GetService(typeof(IDependancyA));
-            var depb = sp.GetService(typeof(IDependancyB));
+            var depa = sp.GetService(typeof(IDependencyA));
+            var depb = sp.GetService(typeof(IDependencyB));
 
             spc.ServiceConfigurations.Should().HaveCount(1);
             spc.ServiceConfigurations.First().GetServiceTypes().Should().HaveCount(2);
@@ -54,9 +54,9 @@ namespace Nathanael.DI.Tests
             var spc = new ServiceProviderConfiguration();
 
             spc.ProvideTransient<ServiceA>()
-               .WhenResolving<IDependancyA>();
+               .WhenResolving<IDependencyA>();
             spc.ProvideTransient<ServiceB>()
-               .WhenResolving<IDependancyB>();
+               .WhenResolving<IDependencyB>();
             spc.ProvideTransient<ServiceWithDependencies>();
 
             var builder = new ServiceProviderBuilder();
