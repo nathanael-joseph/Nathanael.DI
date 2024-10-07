@@ -135,7 +135,7 @@ namespace Nathanael.DI
                 var parametersRequired = resolvableDependencyCollection.EnsureConstructorParametersAreResolvable(genericImplementationType, sc.Lifetime, cstr);
                 
                 var dependencies = parametersRequired.Select(pr => pr.Required ? 
-                                                                   sp.GetRequiredService(pr.ParameterInfo.ParameterType) : 
+                                                                   sp.GetRequiredServiceInternal(pr.ParameterInfo.ParameterType) : 
                                                                    sp.GetService(pr.ParameterInfo.ParameterType)
                                                             )
                                                      .ToArray();
@@ -151,9 +151,9 @@ namespace Nathanael.DI
 
             var iServiceProvider = typeof(IServiceProvider);
             var getServiceMethod = iServiceProvider.GetMethod(nameof(IServiceProvider.GetService))!;
-            var getRequiredServiceMethod = typeof(ServiceProviderExtensions).GetMethod(nameof(ServiceProviderExtensions.GetRequiredService), 
-                                                                                              BindingFlags.Public | BindingFlags.Static,
-                                                                                              new[] { iServiceProvider, typeof(Type) })!;
+            var getRequiredServiceMethod = typeof(ServiceProviderExtensions).GetMethod(nameof(ServiceProviderExtensions.GetRequiredServiceInternal),
+                                                                                       BindingFlags.NonPublic | BindingFlags.Static,
+                                                                                       new[] { iServiceProvider, typeof(Type) })!;
 
             /* 
              * the expression we are defining is as follows:

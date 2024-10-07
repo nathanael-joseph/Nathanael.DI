@@ -1,33 +1,17 @@
 using FluentAssertions;
+using Nathanael.DI.Tests.Services;
 using System.Linq;
 
 namespace Nathanael.DI.Tests
 {
     public class SanityTests
     {
-        private interface IDependencyA { }
-        private interface IDependencyB { }
-
-        private class ServiceA : IDependencyA { }
-        private class ServiceB : IDependencyB { }
-        private class ServiceAB : IDependencyA, IDependencyB { }
-        private class ServiceWithDependencies
-        {
-            public IDependencyA DependancyA { get; }
-            public IDependencyB DependancyB { get; }
-            
-            public ServiceWithDependencies(IDependencyA dependancyA, IDependencyB dependancyB)
-            {
-                DependancyA = dependancyA;
-                DependancyB = dependancyB;
-            }
-        }
 
         [Fact]
         public void Sanity()
         {
             var spc = new ServiceProviderConfiguration();
-         
+
             spc.ProvideTransient<ServiceAB>()
                .FromFactory(sp => new ServiceAB() /* example factory method */)
                .WhenResolving<IDependencyA>()
@@ -57,18 +41,18 @@ namespace Nathanael.DI.Tests
                .WhenResolving<IDependencyA>();
             spc.ProvideTransient<ServiceB>()
                .WhenResolving<IDependencyB>();
-            spc.ProvideTransient<ServiceWithDependencies>();
+            spc.ProvideTransient<ServiceDependingOnAAndB>();
 
             var builder = new ServiceProviderBuilder();
             var sp = builder.Build(spc);
-            var service = sp.GetService(typeof(ServiceWithDependencies));
+            var service = sp.GetService(typeof(ServiceDependingOnAAndB));
 
             spc.ServiceConfigurations.Should().HaveCount(3);
-            service.Should().BeOfType<ServiceWithDependencies>();
-            service.As<ServiceWithDependencies>().DependancyA.Should().NotBeNull();
-            service.As<ServiceWithDependencies>().DependancyA.Should().BeOfType<ServiceA>();
-            service.As<ServiceWithDependencies>().DependancyB.Should().NotBeNull();
-            service.As<ServiceWithDependencies>().DependancyB.Should().BeOfType<ServiceB>();
+            service.Should().BeOfType<ServiceDependingOnAAndB>();
+            service.As<ServiceDependingOnAAndB>().DependancyA.Should().NotBeNull();
+            service.As<ServiceDependingOnAAndB>().DependancyA.Should().BeOfType<ServiceA>();
+            service.As<ServiceDependingOnAAndB>().DependancyB.Should().NotBeNull();
+            service.As<ServiceDependingOnAAndB>().DependancyB.Should().BeOfType<ServiceB>();
         }
 
     }

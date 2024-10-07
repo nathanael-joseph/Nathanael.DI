@@ -53,8 +53,6 @@ namespace Nathanael.DI
                 return accessors.First().GetService(this, serviceType);
             }
 
-            if (serviceType == typeof(IServiceProvider)) return this;
-
             return null;
         }
 
