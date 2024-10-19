@@ -23,7 +23,7 @@ namespace Nathanael.DI.Tests
             var depa = sp.GetService(typeof(IDependencyA));
             var depb = sp.GetService(typeof(IDependencyB));
 
-            spc.ServiceConfigurations.Should().HaveCount(1);
+            spc.ServiceConfigurations.Should().HaveCount(3); // configuration always contains two entries for the ServiceProvider and IServiceProvider services
             spc.ServiceConfigurations.First().GetServiceTypes().Should().HaveCount(2);
             spc.ServiceConfigurations.First().FactoryMethod.Should().NotBeNull();
 
