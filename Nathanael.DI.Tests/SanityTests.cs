@@ -6,7 +6,7 @@ namespace Nathanael.DI.Tests
 {
     public class SanityTests
     {
-
+        
         [Fact]
         public void Sanity()
         {
@@ -24,8 +24,8 @@ namespace Nathanael.DI.Tests
             var depb = sp.GetService(typeof(IDependencyB));
 
             spc.ServiceConfigurations.Should().HaveCount(3); // configuration always contains two entries for the ServiceProvider and IServiceProvider services
-            spc.ServiceConfigurations.First().GetServiceTypes().Should().HaveCount(2);
-            spc.ServiceConfigurations.First().FactoryMethod.Should().NotBeNull();
+            spc.ServiceConfigurations.Last().GetServiceTypes().Should().HaveCount(2);
+            spc.ServiceConfigurations.Last().FactoryMethod.Should().NotBeNull();
 
             depa.Should().BeOfType<ServiceAB>();
             depb.Should().BeOfType<ServiceAB>();
@@ -47,7 +47,7 @@ namespace Nathanael.DI.Tests
             var sp = builder.Build(spc);
             var service = sp.GetService(typeof(ServiceDependingOnAAndB));
 
-            spc.ServiceConfigurations.Should().HaveCount(3);
+            spc.ServiceConfigurations.Should().HaveCount(5);
             service.Should().BeOfType<ServiceDependingOnAAndB>();
             service.As<ServiceDependingOnAAndB>().DependancyA.Should().NotBeNull();
             service.As<ServiceDependingOnAAndB>().DependancyA.Should().BeOfType<ServiceA>();
