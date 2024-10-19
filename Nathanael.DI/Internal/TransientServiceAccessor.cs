@@ -4,14 +4,8 @@ namespace Nathanael.DI.Internal;
 
 internal class TransientServiceAccessor : ServiceAccessor
 {
-    private readonly Func<IServiceProvider, Type?, object?> _factory;
-
-    public override Lifetime Lifetime => Lifetime.Transient;
-
-    public TransientServiceAccessor(Func<IServiceProvider, Type?, object?> factory)
+    public TransientServiceAccessor(Func<IServiceProvider, Type?, object?> factory) : base(factory)
     {
-        ArgumentNullException.ThrowIfNull(factory, nameof(factory));
-        _factory = factory;
     }   
 
     public override ServiceAccessor CreateScopedServiceAccessor()
@@ -21,7 +15,7 @@ internal class TransientServiceAccessor : ServiceAccessor
 
     public override object? GetService(ServiceProvider serviceProvider, Type? genericImplementationType = null)
     {
-        return _factory(serviceProvider, genericImplementationType);
+        return Factory(serviceProvider, genericImplementationType);
     }
 
     public override void Dispose()

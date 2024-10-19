@@ -9,8 +9,9 @@ public class ServiceProviderConfiguration
 
     public ServiceProviderConfiguration()
     {
-        var spConfig = new ServiceConfiguration(typeof(IServiceProvider), Lifetime.Transient, sp => sp);
-        ServiceConfigurations = new List<ServiceConfiguration>() { spConfig };
+        var ispConfig = new ServiceConfiguration(typeof(IServiceProvider), Lifetime.Transient, sp => sp);
+        var spConfig = new ServiceConfiguration(typeof(ServiceProvider), Lifetime.Transient, sp => sp as ServiceProvider);
+        ServiceConfigurations = new List<ServiceConfiguration>() { ispConfig };
     }
 
 }

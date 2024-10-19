@@ -5,16 +5,10 @@ namespace Nathanael.DI.Internal;
 
 internal class SingletonServiceAccessor : ServiceAccessor
 {
-    private readonly object _lock = new();
-    private readonly Func<IServiceProvider, Type?, object?> _factory;
     private readonly ConcurrentDictionary<Type, object?> _instances = new();
 
-    public override Lifetime Lifetime => Lifetime.Singleton;
-
-    public SingletonServiceAccessor(Func<IServiceProvider, Type?, object?> factory)
+    public SingletonServiceAccessor(Func<IServiceProvider, Type?, object?> factory) : base(factory)
     {
-        ArgumentNullException.ThrowIfNull(factory, nameof(factory));
-        _factory = factory;
     }
 
     public override ServiceAccessor CreateScopedServiceAccessor()
@@ -26,7 +20,7 @@ internal class SingletonServiceAccessor : ServiceAccessor
     {
         var key = genericImplementationType ?? typeof(object);
 
-        return _instances.GetOrAdd(key, k => _factory.Invoke(serviceProvider, genericImplementationType));
+        return _instances.GetOrAdd(key, k => Factory.Invoke(serviceProvider, genericImplementationType));
     }
 
     public override void Dispose()

@@ -22,12 +22,7 @@ namespace Nathanael.DI
             Configuration = new ServiceProviderConfiguration(); 
         }
 
-        public ServiceProviderBuilder Configure(Action<ServiceProviderConfiguration> configure)
-        {
-            ArgumentNullException.ThrowIfNull(configure, nameof(configure));
-            configure(Configuration);
-            return this;
-        }
+        
 
         public ServiceProvider Build(ServiceProviderConfiguration configuration)
         {
@@ -147,7 +142,7 @@ namespace Nathanael.DI
         private Func<IServiceProvider, Type?, object?> BuildConcreteFactoryMethod(ServiceConfiguration sc, ResolvableDependencyCollection resolvableDependencyCollection)
         {
             var ci = ConstructorSelector.SelectConstructor(sc, resolvableDependencyCollection); 
-            var parametersRequired = resolvableDependencyCollection.EnsureConstructorParametersAreResolvable(sc, ci);
+            var constructorParameters = resolvableDependencyCollection.EnsureConstructorParametersAreResolvable(sc, ci);
 
             var iServiceProvider = typeof(IServiceProvider);
             var getServiceMethod = iServiceProvider.GetMethod(nameof(IServiceProvider.GetService))!;
@@ -167,13 +162,15 @@ namespace Nathanael.DI
             var sp = Expression.Parameter(iServiceProvider);
             var genericImplementationType = Expression.Parameter(typeof(Type), "_");
 
-            var parameterCalls = parametersRequired.Select(p => Expression.Convert(
-                                                                    p.Required ?
-                                                                        Expression.Call(getRequiredServiceMethod, sp, Expression.Constant(p.ParameterInfo.ParameterType)) :
-                                                                        Expression.Call(sp, getServiceMethod, Expression.Constant(p.ParameterInfo.ParameterType)), 
-                                                                    p.ParameterInfo.ParameterType)
-                                                          );
+            var parameterCalls = constructorParameters.Select(p =>
+            {
+                var resolveDep = p.Required ?
+                                 Expression.Call(getRequiredServiceMethod, sp, Expression.Constant(p.ParameterInfo.ParameterType)) :
+                                 Expression.Call(sp, getServiceMethod, Expression.Constant(p.ParameterInfo.ParameterType));
 
+                return Expression.Convert(resolveDep, p.ParameterInfo.ParameterType);
+            });
+            
             var createService = Expression.New(ci, arguments: parameterCalls);
             var factory = Expression.Lambda<Func<IServiceProvider, Type?, object?>>(createService, sp, genericImplementationType);
             

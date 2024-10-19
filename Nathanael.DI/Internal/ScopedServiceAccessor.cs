@@ -5,14 +5,9 @@ namespace Nathanael.DI.Internal;
 internal class ScopedServiceAccessor : SingletonServiceAccessor
 {
     private readonly bool _isScoped = false;
-    private readonly Func<IServiceProvider, Type?, object?> _factory;
-
-    public override Lifetime Lifetime => Lifetime.Scoped;
 
     private ScopedServiceAccessor(Func<IServiceProvider, Type?, object?> factory, bool isScoped) : base(factory)
     {
-        ArgumentNullException.ThrowIfNull(factory, nameof(factory));
-        _factory = factory;
         _isScoped = isScoped;
     }
 
@@ -20,7 +15,7 @@ internal class ScopedServiceAccessor : SingletonServiceAccessor
 
     public override ServiceAccessor CreateScopedServiceAccessor()
     {
-        return new ScopedServiceAccessor(_factory, true);
+        return new ScopedServiceAccessor(Factory, true);
     }
 
     public override object? GetService(ServiceProvider serviceProvider, Type? genericImplementationType = null)
