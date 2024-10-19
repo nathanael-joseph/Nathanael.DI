@@ -13,6 +13,5 @@ public class ServiceProviderConfiguration
         var spConfig = new ServiceConfiguration(typeof(ServiceProvider), Lifetime.Transient, sp => sp as ServiceProvider);
         ServiceConfigurations = new List<ServiceConfiguration>() { ispConfig };
     }
-
 }
 

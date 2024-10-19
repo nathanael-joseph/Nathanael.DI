@@ -1,4 +1,4 @@
-name: build, test, and publish a .net nuget package
+name: build, test and deploy nathanael.di nuget packages
 
 on:
   push:
@@ -45,6 +45,7 @@ jobs:
         run: dotnet test ./src/Nathanael.DI.Tests/Nathanael.DI.Tests.csproj
 
   publish:
+    if: github.ref_type == 'tag'
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -55,10 +56,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-      # - name: mock publishing nugets
-      #   run: |
-      #        for file in ./nugets/*.nupkg; do
-      #           dotnet nuget push $file -k ${{ secrets.NUGET_ORG_API_KEY }} -s staging.nuget.org
-      #        done
-      - name: print envs
-        run: env
+      - name: publish nugets
+        run: |
+            for file in ./nugets/*.nupkg; do
+                dotnet nuget push $file -k ${{ secrets.NUGET_ORG_API_KEY }} -s https://api.nuget.org/v3/index.json
+            done
