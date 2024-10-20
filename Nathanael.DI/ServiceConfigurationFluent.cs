@@ -15,6 +15,11 @@ namespace Nathanael.DI
             ServiceConfiguration = new(typeof(TService), lifetime);
         }
 
+        protected ServiceConfigurationFluent(ServiceConfigurationFluent<TService> other)
+        {
+            ServiceConfiguration = other.ServiceConfiguration;
+        }
+
         public ServiceConfigurationFluent<TService> WhenResolving<TDep>()
         {
             ServiceConfiguration.RegisterServiceType(typeof(TDep));
@@ -28,6 +33,7 @@ namespace Nathanael.DI
             return this;
         }
     }
+
 
     public static class ServiceProviderConfigurationExtensions
     {
