@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Nathanael.DI.Hosting
 {
@@ -19,7 +18,7 @@ namespace Nathanael.DI.Hosting
 
         public ServiceProviderBuilder CreateBuilder(IServiceCollection services)
         {
-            return new ServiceProviderBuilder(ServiceProviderConfiguration).Configure(config =>
+            return new ServiceProviderBuilder(new(ServiceProviderConfiguration)).Configure(config =>
             {
                 config.RegisterServiceCollection(services);
             });

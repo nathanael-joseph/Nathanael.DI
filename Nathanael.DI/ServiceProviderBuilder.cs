@@ -164,9 +164,11 @@ namespace Nathanael.DI
 
             var parameterCalls = constructorParameters.Select(p =>
             {
+                var ptype = Expression.Constant(p.ParameterInfo.ParameterType);
+
                 var resolveDep = p.Required ?
-                                 Expression.Call(getRequiredServiceMethod, sp, Expression.Constant(p.ParameterInfo.ParameterType)) :
-                                 Expression.Call(sp, getServiceMethod, Expression.Constant(p.ParameterInfo.ParameterType));
+                                 Expression.Call(getRequiredServiceMethod, sp, ptype) :
+                                 Expression.Call(sp, getServiceMethod, ptype);
 
                 return Expression.Convert(resolveDep, p.ParameterInfo.ParameterType);
             });
