@@ -1,12 +1,15 @@
+using Nathanael.DI;
 using Nathanael.DI.Hosting;
-
+// ...
 var builder = WebApplication.CreateBuilder(args);
 
-var diconfig = builder.Host.UseNathanaelDI();
+ServiceProviderConfiguration diConfiguration = builder.Host.UseNathanaelDI();
 
+// configure services here
 
 var app = builder.Build();
 
+// ...
 app.MapGet("/", () => "Hello World!");
 
 app.Run();
