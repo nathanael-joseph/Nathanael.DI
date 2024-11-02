@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Nathanael.DI" Version="1.0.0-pre-release-a" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nathanael.DI\Nathanael.DI.csproj" />
+  </ItemGroup>
 
 </Project>

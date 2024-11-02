@@ -17,7 +17,7 @@ public class Program
             config.ProvideScoped<RandomUserRequestHandler>();
         });
 
-        var sp = builder.Build();
+        ServiceProvider sp = builder.Build();
 
         // use service provider in console application:
         var logger = sp.GetRequiredService<IMessageLogger>();
