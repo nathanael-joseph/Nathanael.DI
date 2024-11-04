@@ -18,6 +18,8 @@ dotnet add [<PROJECT>] package Nathanael.DI
 ## Building the Service Provider
 
 ```csharp
+using Nathanael.DI;
+
 // configure and build service provider...
 var builder = new ServiceProviderBuilder();
 
