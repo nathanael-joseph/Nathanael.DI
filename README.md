@@ -1,4 +1,5 @@
-# Nathanael.DI `latest: 1.0.0` Nathanael.DI.Hosting `latest: 1.0.0`
+# Nathanael.DI
+
 A custom dependency injection library developed for educational purposes and professional use.
 
 ## Installing
@@ -45,3 +46,13 @@ var app = builder.Build();
 app.Run();
 
 ```
+
+## Configuring Services
+
+Our service provider supports configurging three service lifetimes:
+
+- **Transient**: A new instance should be generated whenever the service is resolved.
+- **Singleton**: The same instance should be returned whenever the service is resolved.
+- **Scoped**: The same instance should be returned every time the service is resolved within the same scope. A nerw instance will be generated for each scope when the service is first resolved.
+
+
