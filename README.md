@@ -1,5 +1,4 @@
-# Nathanael.DI
-
+# Nathanael.DI `latest: 1.0.0` Nathanael.DI.Hosting `latest: 1.0.0`
 A custom dependency injection library developed for educational purposes and professional use.
 
 ## Installing
