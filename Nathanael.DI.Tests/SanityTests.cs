@@ -55,5 +55,92 @@ namespace Nathanael.DI.Tests
             service.As<ServiceDependingOnAAndB>().DependancyB.Should().BeOfType<ServiceB>();
         }
 
+
+        [Fact]
+        public void ServiceProvider_ProvidesTransientService()
+        {
+            var spc = new ServiceProviderConfiguration();
+            
+            spc.ProvideTransient<ServiceA>();
+
+            var builder = new ServiceProviderBuilder();
+            var sp = builder.Build(spc);
+
+            var a1 = sp.GetService<ServiceA>(); 
+            var a2 = sp.GetService<ServiceA>();
+
+            Assert.NotNull(a1);
+            Assert.NotNull(a2);
+            Assert.NotSame(a1, a2);
+        }
+
+        [Fact]
+        public void ServiceProvider_ProvidesScopedService()
+        {
+            var spc = new ServiceProviderConfiguration();
+
+            spc.ProvideScoped<ServiceA>();
+
+            var builder = new ServiceProviderBuilder();
+            var sp = builder.Build(spc);
+            
+            ServiceA a1;
+            ServiceA a2;
+            ServiceA a3;
+
+            using (var scope = sp.CreateScopedServiceProvider())
+            {
+                a1 = scope.GetService<ServiceA>();
+                a2 = scope.GetService<ServiceA>();
+            }
+
+            using (var scope = sp.CreateScopedServiceProvider())
+            {
+                a3 = scope.GetService<ServiceA>();
+            }
+
+
+            Assert.NotNull(a1);
+            Assert.NotNull(a2);
+            Assert.NotNull(a3);
+            Assert.Same(a1, a2);
+            Assert.NotSame(a1, a3);
+        }
+
+        [Fact]
+        public void ServiceProvider_ProvidesSingletonService()
+        {
+            var spc = new ServiceProviderConfiguration();
+
+            spc.ProvideSingleton<ServiceA>();
+
+            var builder = new ServiceProviderBuilder();
+            var sp = builder.Build(spc);
+
+            ServiceA a1;
+            ServiceA a2;
+            ServiceA a3;
+
+            a1 = sp.GetService<ServiceA>();
+
+            using (var scope = sp.CreateScopedServiceProvider())
+            {
+                a2 = scope.GetService<ServiceA>();
+            }
+
+            using (var scope = sp.CreateScopedServiceProvider())
+            {
+                a3 = scope.GetService<ServiceA>();
+            }
+
+
+            Assert.NotNull(a1);
+            Assert.NotNull(a2);
+            Assert.NotNull(a3);
+            Assert.Same(a1, a2);
+            Assert.Same(a1, a3);
+        }
+
+
     }
 }
