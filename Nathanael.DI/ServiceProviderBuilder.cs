@@ -60,10 +60,10 @@ namespace Nathanael.DI
 
         private ResolvableDependencyCollection BuildResolvableDependencyCollection(List<ServiceConfiguration> serviceConfigurations)
         {
-            var serviceTypeIsScoped = serviceConfigurations.SelectMany(sc => sc.GetServiceTypes().Select(st => (ServiceType: st, Lifetime: sc.Lifetime)))
-                                                           .GroupBy(sl => sl.ServiceType);
+            var serviceTypeLifetimes = serviceConfigurations.SelectMany(sc => sc.GetServiceTypes().Select(st => (ServiceType: st, Lifetime: sc.Lifetime)))
+                                                            .GroupBy(sl => sl.ServiceType);
 
-            foreach (var group in serviceTypeIsScoped)
+            foreach (var group in serviceTypeLifetimes)
             {
                 var lifetimes = group.Select(g => g.Lifetime).Distinct();
                 if (lifetimes.Contains(Lifetime.Scoped) && lifetimes.Any(l => l != Lifetime.Scoped))
@@ -72,7 +72,7 @@ namespace Nathanael.DI
                 }
             }
 
-            var dict = serviceTypeIsScoped.ToDictionary(stl => stl.Key, stl => stl.First().Lifetime == Lifetime.Scoped);
+            var dict = serviceTypeLifetimes.ToDictionary(stl => stl.Key, stl => stl.First().Lifetime == Lifetime.Scoped);
             return new ResolvableDependencyCollection(dict);
         }
 
